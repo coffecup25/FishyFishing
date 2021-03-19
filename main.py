@@ -10,7 +10,7 @@ from colormath.color_diff import delta_e_cie2000
 
 import cv2
 import pytesseract
-pytesseract.pytesseract.tesseract_cmd = r'Tesseract\tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = r'Tesseract\tesseract.exe'
 
 
 BAR_BOT_LEFT = (1765,880)
@@ -47,15 +47,78 @@ def start_up():
 
 def main():
     start_up()
-    bait()
-    return_fish()
+    
+    while True:
+        cast()
+        bait()
+        return_fish()
+
+        pag.mouseUp()
+        pag.mouseUp(button="right")
+        time.sleep(3)
+
     #mouse_position(100)
 
+    pag.mouseUp()
+    pag.mouseUp(button="right")
+    
 
+def cast():
+    pag.mouseDown()
+    time.sleep(1.9)
+    pag.mouseUp()
+    time.sleep(5)
+    print("done with cast")
+
+def is_zero(data):
+    bounds=(1540, 955, 1545, 979) #left top right bot
+    offset_x= 31     # 1771 - 1740
+
+    segment=data[bounds[1]:bounds[3], bounds[0]:bounds[2]]
+    if (segment== (247, 247, 247)).all():
+        return True
+    else:
+        return False
 
 def return_fish():
-        pag.mouseDown()
-        pag.mouseDown(button="right")
+    pag.mouseDown()
+    pag.mouseDown(button="right")
+    
+    while True:
+        img = pag.screenshot()
+        data = np.array(img)
+        if is_zero(data):
+            print("reeled in something maybe")
+            pag.mouseUp()
+            pag.mouseUp(button="right")
+            got_fish()
+            break
+        time.sleep(0.5)
+
+def got_fish():
+    bounds=(1048, 935, 1050, 938)
+    time.sleep(4)
+
+    img = pag.screenshot()
+    data = np.array(img)
+    segment=data[bounds[1]:bounds[3], bounds[0]:bounds[2]]
+
+    if (segment == (220, 143, 73)).all():
+        print("reeled in fish for real")
+        pag.moveTo(1048,935)
+        time.sleep(0.2)
+        pag.leftClick()
+        return True
+    elif (segment == (61, 61, 61)).all():
+        print("no space for this fish")
+        pag.moveTo(800,935)
+        time.sleep(0.2)
+        pag.leftClick()
+        return True
+    else:
+        print("reeled in jack shit mannen") 
+        return False
+
 
 def bait():
     since_pulling=time.time()-0.5
@@ -72,8 +135,11 @@ def bait():
             since_pulling=time.time()
         else:
             img = pag.screenshot()
-            dist=distance(img.crop(DISTANCE_BOX))
             data = np.array(img)
+
+            if is_zero(data):
+                pag.mouseUp()          
+                return
             #start=time.time()
             #value=np.average(data[i,left_bound:right_bound])
 
