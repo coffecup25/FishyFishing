@@ -3,10 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 from matplotlib.patches import Rectangle
+
 from colormath.color_objects import sRGBColor,LabColor
 from colormath.color_conversions import convert_color
 from colormath.color_diff import delta_e_cie2000
 
+import cv2
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = r'Tesseract\tesseract.exe'
 
 
 BAR_BOT_LEFT = (1765,880)
@@ -27,12 +31,14 @@ HIGHER_BAR_RGB = (27/255.0, 171/255.0, 179/255.0)
 HIGHER_BAR_TOP_Y=820
 HIGHER_BAR_BOT_Y=828
 
+DISTANCE_BOX=(1520, 925, 1630, 1001)
+
 
 def start_up():
     pag.FAILSAFE = True
 
     print("Starting up")
-    for i in range(4):
+    for i in range(3):
         print("#")
         time.sleep(1)
  
@@ -46,9 +52,6 @@ def main():
     #mouse_position(100)
 
 
-
-
-    
 
 def return_fish():
         pag.mouseDown()
@@ -69,6 +72,7 @@ def bait():
             since_pulling=time.time()
         else:
             img = pag.screenshot()
+            dist=distance(img.crop(DISTANCE_BOX))
             data = np.array(img)
             #start=time.time()
             #value=np.average(data[i,left_bound:right_bound])
